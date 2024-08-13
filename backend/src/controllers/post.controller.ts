@@ -32,7 +32,7 @@ const createPost = async (req: Request, res: Response) => {
         parent_post_id: parentPost ? parentPost.id : null,
       },
       include: {
-        _count:{select:{Post:true,Likes:true}},
+        _count: { select: { Post: true, Likes: true } },
         post_author: {
           select: {
             id: true,
@@ -64,7 +64,7 @@ const getPost = async (req: Request, res: Response) => {
     const post = await prisma.post.findUnique({
       where: { id: post_id },
       include: {
-        _count:{select:{Post:true,Likes:true}},
+        _count: { select: { Post: true, Likes: true } },
         post_author: {
           select: {
             id: true,
@@ -95,11 +95,11 @@ const getPostsByParent = async (req: Request, res: Response) => {
   try {
     const { parent_id } = req.params;
     let posts;
-    if(!req.query.page || !req.query.pageLimit) {
+    if (!req.query.page || !req.query.pageLimit) {
       posts = await prisma.post.findMany({
         where: { parent_post_id: parent_id },
         include: {
-          _count:{select:{Post:true,Likes:true}},
+          _count: { select: { Post: true, Likes: true } },
           post_author: {
             select: {
               id: true,
@@ -111,30 +111,30 @@ const getPostsByParent = async (req: Request, res: Response) => {
             },
           },
         },
-        orderBy:{createdAt:"desc"}
+        orderBy: { createdAt: "desc" },
       });
     } else {
       const page = parseInt(req.query.page as string);
       const pageLimit = parseInt(req.query.pageLimit as string);
       const skip = page * pageLimit - pageLimit;
       posts = await prisma.post.findMany({
-        where:{parent_post_id:parent_id},
-        include:{
-          _count:{select:{Post:true,Likes:true}},
-          post_author:{
-            select:{
-              id:true,
-              email:true,
-              username:true,
-              firstName:true,
-              lastName:true,
-              profile_picture:true,
-            }
-          }
+        where: { parent_post_id: parent_id },
+        include: {
+          _count: { select: { Post: true, Likes: true } },
+          post_author: {
+            select: {
+              id: true,
+              email: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              profile_picture: true,
+            },
+          },
         },
-        skip:skip,
-        take:pageLimit,
-        orderBy:{createdAt:"desc"}
+        skip: skip,
+        take: pageLimit,
+        orderBy: { createdAt: "desc" },
       });
     }
     return res.status(200).json({ success: true, posts });
@@ -154,7 +154,7 @@ const getAllPosts = async (req: Request, res: Response) => {
       posts = await prisma.post.findMany({
         where: { parent_post_id: null },
         include: {
-          _count: { select: { Post: true,Likes:true}},
+          _count: { select: { Post: true, Likes: true } },
           post_author: {
             select: {
               id: true,
@@ -177,7 +177,7 @@ const getAllPosts = async (req: Request, res: Response) => {
         take: pageLimit,
         where: { parent_post_id: null },
         include: {
-          _count:{select:{Post:true,Likes:true}},
+          _count: { select: { Post: true, Likes: true } },
           post_author: {
             select: {
               id: true,
@@ -202,34 +202,90 @@ const getAllPosts = async (req: Request, res: Response) => {
   }
 };
 
-
-const createOrDeleteLike = async (req:Request,res:Response) => {
+const createOrDeleteLike = async (req: Request, res: Response) => {
   try {
-    const {post_id} = req.body;
+    const { post_id } = req.body;
     const userId = req.userId;
-    const post = await prisma.post.findUnique({where:{id:post_id}});
-    const user = await prisma.user.findUnique({where:{id:userId}});
-    if(!post || !user) return res.status(400).json({"success":false,"message":"No user or post available"});
+    const post = await prisma.post.findUnique({ where: { id: post_id } });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!post || !user)
+      return res
+        .status(400)
+        .json({ success: false, message: "No user or post available" });
     let responseMsg;
     // check if like already exists on post by user
-    const like = await prisma.likes.findFirst({where:{AND:[{liked_by_id:user.id},{liked_post_id:post.id}]}});
-    if(like) {
-      await prisma.likes.delete({where:{liked_by_id_liked_post_id:{
-        liked_by_id:like.liked_by_id,
-        liked_post_id:like.liked_post_id,
-      }}});
-      responseMsg = "removed like from post"
+    const like = await prisma.likes.findFirst({
+      where: { AND: [{ liked_by_id: user.id }, { liked_post_id: post.id }] },
+    });
+    if (like) {
+      await prisma.likes.delete({
+        where: {
+          liked_by_id_liked_post_id: {
+            liked_by_id: like.liked_by_id,
+            liked_post_id: like.liked_post_id,
+          },
+        },
+      });
+      responseMsg = "removed like from post";
     } else {
-      const newLike = await prisma.likes.create({data:{liked_by_id:user.id,liked_post_id:post.id}});
-      responseMsg = "liked post"
+      const newLike = await prisma.likes.create({
+        data: { liked_by_id: user.id, liked_post_id: post.id },
+      });
+      responseMsg = "liked post";
     }
-    return res.status(201).json({"success":true,"message":responseMsg});
+    return res.status(201).json({ success: true, message: responseMsg });
   } catch (e) {
     console.log(e);
-    return res.status(500).json({"success":false,"message":"Something went wrong when liking a post"});
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Something went wrong when liking a post",
+      });
   }
-}
+};
 
+const getUsersPosts = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user)
+      return res
+        .status(400)
+        .json({ success: false, message: "user not found" });
+    const posts = await prisma.post.findMany({
+      where: { post_author_id: user.id, parent_post_id: null },
+      include: {
+        _count: { select: { Post: true, Likes: true } },
+        post_author: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            profile_picture: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+    return res.status(200).json({ success: true, posts });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Something went wrong when getting user's posts",
+      });
+  }
+};
 
-
-export { createPost, getPost, getPostsByParent, getAllPosts,createOrDeleteLike };
+export {
+  createPost,
+  getPost,
+  getPostsByParent,
+  getAllPosts,
+  createOrDeleteLike,
+  getUsersPosts,
+};

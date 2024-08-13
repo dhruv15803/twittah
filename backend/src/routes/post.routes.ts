@@ -1,9 +1,11 @@
 import express from 'express'
 import { authenticateUser } from '../middlewares/authenticateUser.js';
-import { createOrDeleteLike, createPost, getAllPosts, getPost, getPostsByParent } from '../controllers/post.controller.js';
+import { createOrDeleteLike, createPost, getAllPosts, getPost, getPostsByParent, getUsersPosts } from '../controllers/post.controller.js';
 
 const router = express.Router();
 
+
+router.get('/userPosts',authenticateUser,getUsersPosts);
 router.post('/create',authenticateUser,createPost);
 router.get('/posts',authenticateUser,getAllPosts);
 router.get('/:post_id',authenticateUser,getPost);

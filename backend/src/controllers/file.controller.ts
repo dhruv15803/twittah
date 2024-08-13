@@ -8,21 +8,20 @@ cloudinary.config({
     cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
     api_key:process.env.CLOUDINARY_API_KEY,
     api_secret:process.env.CLOUDINARY_API_SECRET,
-})
+});
+
 
 const uploadFiles = async (req:Request,res:Response) => {
     try {
         if(!req.files || !Array.isArray(req.files)) return res.status(400).json({"success":false,"message":"no files available"});
 
         
-        const urlPromises =  req.files.map(async (file) => {
+        const urls = await Promise.all(req.files.map(async (file) => {
             const cloudinaryResponse = await cloudinary.uploader.upload(file.path,{
                 resource_type:"auto"
             })
             return cloudinaryResponse.url;
-        })
-        const urls = await Promise.all(urlPromises);
-
+        }));
 
         res.status(200).json({"success":true,urls});
         fs.readdir('./Public',(err,files) => {

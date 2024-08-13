@@ -10,13 +10,12 @@ const uploadFiles = async (req, res) => {
     try {
         if (!req.files || !Array.isArray(req.files))
             return res.status(400).json({ "success": false, "message": "no files available" });
-        const urlPromises = req.files.map(async (file) => {
+        const urls = await Promise.all(req.files.map(async (file) => {
             const cloudinaryResponse = await cloudinary.uploader.upload(file.path, {
                 resource_type: "auto"
             });
             return cloudinaryResponse.url;
-        });
-        const urls = await Promise.all(urlPromises);
+        }));
         res.status(200).json({ "success": true, urls });
         fs.readdir('./Public', (err, files) => {
             if (err)

@@ -175,4 +175,18 @@ const getLoggedInUser = async (req: Request, res: Response) => {
   }
 };
 
-export { registerUser, getAllUsers, loginUser, getLoggedInUser };
+const logoutUser = async (req:Request,res:Response) => {
+  try {
+    const userId = req.userId;
+    const user = await prisma.user.findUnique({where:{id:userId}});
+    if(!user) return res.status(400).json({"success":false,"message":"userid not valid"});
+    res.status(200).clearCookie('auth_token').json({"success":true,"message":"user logged out"});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({"success":false,"message":"Something went wrong when logging out"});
+  }
+
+}
+
+
+export { registerUser, getAllUsers, loginUser, getLoggedInUser,logoutUser};
