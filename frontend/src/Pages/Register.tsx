@@ -126,7 +126,7 @@ const Register = () => {
           <div className="flex flex-col md:flex-row  md:items-center gap-2">
             <div className="flex-1 flex flex-col gap-1">
               <Label htmlFor="firstName">First Name</Label>
-              <Input {...register("firstName")} type="text" id="firstName" />
+              <Input {...register("firstName")} type="text" id="firstName"/>
               {errors.firstName && (
                 <div className="text-red-500">{errors.firstName.message}</div>
               )}

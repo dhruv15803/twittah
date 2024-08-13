@@ -22,3 +22,12 @@ export const getPostDate = (date: Date): string => {
         return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`
     }
 };
+
+export const getDateFromDateString = (dateString:string) => {
+  const date = new Date(dateString);
+  const month = date.getMonth()+1;
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+}

@@ -5,6 +5,7 @@ import AppContextProvider from "./context/AppContext";
 import ProtectedRoutes from "./Layouts/ProtectedRoutes";
 import Home from "./Pages/Home";
 import PostPage from "./Pages/PostPage";
+import Profile from "./Pages/Profile";
 export const backendUrl = "http://localhost:5000";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
             <Route path="/" element={<ProtectedRoutes/>}>
               <Route index element={<Home/>}/>
               <Route path="post/:postId" element={<PostPage/>}/>
+              <Route path="profile" element={<Profile/>}/>
             </Route>
           </Routes>
         </Router>

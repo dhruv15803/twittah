@@ -1,3 +1,4 @@
+import Header from "@/components/Header";
 import { AppContext } from "@/context/AppContext";
 import { AppContextType } from "@/types";
 import { useContext } from "react";
@@ -6,7 +7,10 @@ import { Navigate, Outlet } from "react-router-dom";
 const ProtectedRoutes = () => {
   const { loggedInUser } = useContext(AppContext) as AppContextType;
   if (loggedInUser !== null) {
-    return <Outlet/>;
+    return <>
+      <Header/>
+      <Outlet/>
+    </>
   } else {
     return <Navigate to="/login" />;
   }
